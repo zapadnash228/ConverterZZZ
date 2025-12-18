@@ -2,68 +2,76 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     background: linear-gradient(135deg, #a8a8a8 0%, #6d6d6d 100%);
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
+    padding: 0;
+    overflow-x: hidden;
 }
 
 .container {
     background: white;
-    border-radius: 24px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    max-width: 1400px;
+    min-height: 100vh;
     width: 100%;
-    overflow: hidden;
 }
 
 .header {
     background: linear-gradient(135deg, #a8a8a8 0%, #6d6d6d 100%);
-    padding: 30px;
+    padding: 20px 16px;
     text-align: center;
     color: white;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .header h1 {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
 }
 
 .header p {
-    font-size: 13px;
+    font-size: 12px;
     opacity: 0.9;
 }
 
 .content {
-    padding: 30px;
+    padding: 16px;
+    padding-bottom: 30px;
+}
+
+/* Конвертер */
+.converter-section {
+    position: relative;
+    margin-bottom: 20px;
 }
 
 .currency-box {
     background: #f8f9fa;
     border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 16px;
-    position: relative;
+    padding: 16px;
+    margin-bottom: 12px;
 }
 
 .currency-label {
-    font-size: 12px;
+    font-size: 11px;
     color: #666;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     font-weight: 500;
+    text-transform: uppercase;
 }
 
 .currency-input-wrapper {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+    width: 100%;
 }
 
 .flag-icon {
@@ -76,19 +84,22 @@ body {
     font-size: 20px;
     background: white;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    flex-shrink: 0;
 }
 
 .currency-select {
     background: white;
     border: none;
     border-radius: 12px;
-    padding: 12px 16px;
-    font-size: 16px;
+    padding: 10px 8px;
+    font-size: 14px;
     font-weight: 600;
     color: #333;
     cursor: pointer;
-    min-width: 100px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    flex-shrink: 0;
+    min-width: 70px;
+    max-width: 80px;
 }
 
 .currency-select:focus {
@@ -100,12 +111,14 @@ body {
     background: white;
     border: none;
     border-radius: 12px;
-    padding: 12px 16px;
-    font-size: 20px;
+    padding: 10px 8px;
+    font-size: 16px;
     font-weight: 600;
     text-align: right;
     color: #333;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    min-width: 0;
+    width: 100%;
 }
 
 .amount-input:focus {
@@ -116,12 +129,17 @@ body {
     flex: 1;
     background: white;
     border-radius: 12px;
-    padding: 12px 16px;
-    font-size: 20px;
+    padding: 10px 8px;
+    font-size: 16px;
     font-weight: 600;
     text-align: right;
     color: #333;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    min-width: 0;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .swap-button {
@@ -131,39 +149,42 @@ body {
     transform: translate(-50%, -50%);
     background: white;
     border: 4px solid #f8f9fa;
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     font-size: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     transition: all 0.3s;
     z-index: 10;
+    touch-action: manipulation;
 }
 
-.swap-button:hover {
+.swap-button:active {
     background: #7a7a7a;
-    transform: translate(-50%, -50%) rotate(180deg);
+    transform: translate(-50%, -50%) scale(0.95);
 }
 
+/* Информация о курсе */
 .rate-info {
     text-align: center;
-    padding: 20px 0;
-    font-size: 14px;
-    color: #666;
+    padding: 16px 0;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 16px;
 }
 
 .rate-value {
     font-weight: 600;
     color: #333;
     margin-bottom: 4px;
+    font-size: 15px;
 }
 
 .update-time {
-    font-size: 12px;
+    font-size: 11px;
     color: #999;
 }
 
@@ -174,89 +195,94 @@ body {
     border-radius: 12px;
     padding: 14px;
     width: 100%;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.2s;
     margin-bottom: 20px;
+    touch-action: manipulation;
 }
 
-.refresh-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(122, 122, 122, 0.4);
+.refresh-button:active {
+    transform: scale(0.98);
+    opacity: 0.9;
 }
 
-/* Горизонтальное расположение колонок */
-.main-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin-top: 20px;
+/* Табы */
+.tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    background: #f8f9fa;
+    padding: 4px;
+    border-radius: 12px;
 }
 
-.left-column {
+.tab-button {
     flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+    touch-action: manipulation;
 }
 
-.right-column {
-    flex: 1;
+.tab-button.active {
+    background: white;
+    color: #333;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* График */
 .chart-container {
     background: #f8f9fa;
     border-radius: 16px;
-    padding: 20px;
-    margin-top: 20px;
+    padding: 16px;
+    margin-bottom: 16px;
 }
 
 .chart-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+#rateChart,
+#yearlyChart {
+    max-height: 250px;
+}
+
+/* Годовой отчёт */
+.year-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.year-selector label {
     font-size: 14px;
     font-weight: 600;
     color: #333;
-    margin-bottom: 16px;
-    text-align: center;
-}
-
-.error-msg {
-    background: #fee;
-    color: #c33;
-    padding: 12px;
-    border-radius: 12px;
-    text-align: center;
-    margin-bottom: 16px;
-    display: none;
-    font-size: 14px;
-}
-
-.loading {
-    text-align: center;
-    color: #7a7a7a;
-    padding: 20px;
-    font-size: 14px;
-}
-
-/* Стили для годового отчёта */
-.report-container {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    margin-top: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.report-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-.report-header h2 {
-    font-size: 18px;
-    color: #333;
-    margin: 0;
 }
 
 .year-select {
@@ -266,60 +292,32 @@ body {
     padding: 8px 12px;
     font-size: 14px;
     cursor: pointer;
-    transition: all 0.3s;
-}
-
-.year-select:hover {
-    border-color: #7a7a7a;
+    font-weight: 600;
 }
 
 .year-select:focus {
     outline: none;
     border-color: #7a7a7a;
-    box-shadow: 0 0 0 3px rgba(122, 122, 122, 0.1);
-}
-
-.report-content {
-    background: #f8f9fa;
-    border-radius: 12px;
-    padding: 20px;
-}
-
-.chart-container-report {
-    background: white;
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 20px;
-    border: 1px solid #e0e0e0;
-}
-
-.chart-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 16px;
-    text-align: center;
 }
 
 .report-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 12px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
 }
 
 .stat-item {
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
+    background: #f8f9fa;
+    padding: 14px;
+    border-radius: 12px;
     text-align: center;
     border-left: 4px solid #7a7a7a;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .stat-label {
     display: block;
-    font-size: 11px;
+    font-size: 10px;
     color: #999;
     text-transform: uppercase;
     font-weight: 600;
@@ -328,45 +326,34 @@ body {
 
 .stat-value {
     display: block;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     color: #333;
     word-break: break-all;
 }
 
 .report-details {
-    background: white;
-    border-radius: 10px;
-    padding: 15px;
-    border: 1px solid #e0e0e0;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 16px;
 }
 
 .details-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 12px 0;
+    border-bottom: 1px solid #e0e0e0;
 }
 
-@media (max-width: 480px) {
-    .container {
-        margin: 10px;
-    }
-    
-    .content {
-        padding: 20px;
-    }
+.details-item:last-child {
+    border-bottom: none;
+}
 
-    .main-layout {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-
-    .chart-container,
-    .report-container {
-        padding: 15px;
-    }
+.detail-label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
 }
 
 .detail-value {
@@ -375,12 +362,73 @@ body {
     font-weight: 600;
 }
 
-@media (max-width: 480px) {
+/* Ошибки */
+.error-msg {
+    background: #fee;
+    color: #c33;
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 16px;
+    display: none;
+    font-size: 13px;
+}
+
+/* Адаптация для маленьких экранов */
+@media (max-width: 360px) {
+    .currency-select {
+        padding: 10px 8px;
+        font-size: 14px;
+    }
+    
+    .amount-input,
+    .amount-display {
+        font-size: 16px;
+        padding: 10px;
+    }
+    
+    .flag-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 20px;
+    }
+}
+
+/* Ландшафтная ориентация */
+@media (orientation: landscape) and (max-height: 500px) {
+    .header {
+        padding: 12px 16px;
+    }
+    
+    .header h1 {
+        font-size: 18px;
+    }
+    
+    .header p {
+        display: none;
+    }
+}
+
+/* Планшеты и больше */
+@media (min-width: 768px) {
     .container {
-        margin: 10px;
+        max-width: 600px;
+        margin: 20px auto;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        min-height: auto;
+    }
+    
+    .header {
+        position: static;
     }
     
     .content {
-        padding: 20px;
+        padding: 24px;
+    }
+    
+    .report-stats {
+        grid-template-columns: repeat(4, 1fr);
     }
 }
