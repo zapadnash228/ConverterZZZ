@@ -1,8 +1,3 @@
-// API для получения курсов валют
-// Используем бесплатный API с историческими данными
-const API_URL = 'https://v6.exchangerate-api.com/v6/latest/';
-const FIXER_API = 'https://data.fixer.io/api/';
-
 // Элементы DOM
 const amountInput = document.getElementById('amount');
 const fromCurrency = document.getElementById('fromCurrency');
@@ -26,7 +21,12 @@ const trend = document.getElementById('trend');
 const volatility = document.getElementById('volatility');
 const tradingDays = document.getElementById('tradingDays');
 
-// Переменные для графика
+// Табы
+const tabButtons = document.querySelectorAll('.tab-button');
+const weekTab = document.getElementById('weekTab');
+const yearTab = document.getElementById('yearTab');
+
+// Переменные
 let exchangeRates = {};
 let chartInstance = null;
 let yearlyChartInstance = null;
@@ -43,44 +43,66 @@ const currencyFlags = {
     'SGD': '🇸🇬'
 };
 
-// Инициализация при загрузке страницы
+// Инициализация
 document.addEventListener('DOMContentLoaded', () => {
     loadExchangeRates();
-    loadYearlyReport();
     
     // Слушатели событий
     amountInput.addEventListener('input', convertCurrency);
     fromCurrency.addEventListener('change', () => {
         loadExchangeRates();
-        loadYearlyReport();
         updateFlags();
     });
     toCurrency.addEventListener('change', () => {
         convertCurrency();
         loadHistoricalData();
-        loadYearlyReport();
         updateFlags();
     });
     swapBtn.addEventListener('click', swapCurrencies);
     refreshBtn.addEventListener('click', loadExchangeRates);
     reportYear.addEventListener('change', loadYearlyReport);
     
+    // Табы
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabName = button.dataset.tab;
+            switchTab(tabName);
+        });
+    });
+    
     updateFlags();
 });
 
-// Обновление флагов валют
+// Переключение табов
+function switchTab(tabName) {
+    tabButtons.forEach(btn => btn.classList.remove('active'));
+    weekTab.classList.remove('active');
+    yearTab.classList.remove('active');
+    
+    const activeButton = document.querySelector(`[data-tab="${tabName}"]`);
+    activeButton.classList.add('active');
+    
+    if (tabName === 'week') {
+        weekTab.classList.add('active');
+        loadHistoricalData();
+    } else if (tabName === 'year') {
+        yearTab.classList.add('active');
+        loadYearlyReport();
+    }
+}
+
+// Обновление флагов
 function updateFlags() {
     fromFlag.textContent = currencyFlags[fromCurrency.value] || '💱';
     toFlag.textContent = currencyFlags[toCurrency.value] || '💱';
 }
 
-// Загрузка курсов валют
+// Загрузка курсов
 async function loadExchangeRates() {
     try {
         clearError();
         refreshBtn.textContent = '⏳ Загрузка...';
         
-        // Используем exchangerate-api.com (бесплатный, без ключа)
         const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${fromCurrency.value}`);
         
         if (!response.ok) {
@@ -90,23 +112,24 @@ async function loadExchangeRates() {
         const data = await response.json();
         exchangeRates = data.rates || {};
         
-        // Обновляем время последнего обновления
         const now = new Date();
-        updateTime.textContent = `Обновлено: ${now.toLocaleString('ru-RU')}`;
+        updateTime.textContent = `Обновлено: ${now.toLocaleString('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit'
+        })}`;
         
-        // Конвертируем валюту и обновляем график
         convertCurrency();
         await loadHistoricalData();
         
         refreshBtn.textContent = '🔄 Обновить курсы';
     } catch (error) {
-        showError('Ошибка загрузки курсов: ' + error.message);
+        showError('Ошибка загрузки курсов');
         refreshBtn.textContent = '🔄 Обновить курсы';
         console.error('API Error:', error);
     }
 }
 
-// Конвертирование валюты
+// Конвертация
 function convertCurrency() {
     const amount = parseFloat(amountInput.value) || 0;
     
@@ -125,12 +148,11 @@ function convertCurrency() {
     const result = (amount * rate).toFixed(2);
     toValue.textContent = result;
     
-    // Обновляем информацию о курсе
     const rateValue = rate.toFixed(6);
     rateText.textContent = `1 ${fromCurrency.value} = ${rateValue} ${toCurrency.value}`;
 }
 
-// Обмен валют местами
+// Обмен валют
 function swapCurrencies() {
     const temp = fromCurrency.value;
     fromCurrency.value = toCurrency.value;
@@ -140,7 +162,7 @@ function swapCurrencies() {
     updateFlags();
 }
 
-// Загрузка исторических данных за 7 дней
+// Загрузка данных за 7 дней
 async function loadHistoricalData() {
     try {
         const dates = [];
@@ -149,16 +171,13 @@ async function loadHistoricalData() {
         for (let i = 6; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
-            const dateStr = date.toISOString().split('T')[0];
             
-            // Форматируем дату для отображения
-            const formattedDate = new Date(date).toLocaleDateString('ru-RU', {
-                month: 'short',
-                day: 'numeric'
+            const formattedDate = date.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'short'
             });
             dates.push(formattedDate);
             
-            // Получаем курсы за каждый день
             const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${fromCurrency.value}`);
             
             if (response.ok) {
@@ -171,11 +190,11 @@ async function loadHistoricalData() {
         updateChart(dates, rates);
         
     } catch (error) {
-        console.error('Ошибка при загрузке исторических данных:', error);
+        console.error('Ошибка загрузки данных:', error);
     }
 }
 
-// Обновление/создание графика
+// Обновление графика 7 дней
 function updateChart(dates, rates) {
     const ctx = document.getElementById('rateChart');
     
@@ -192,14 +211,13 @@ function updateChart(dates, rates) {
                 data: rates,
                 borderColor: '#7a7a7a',
                 backgroundColor: 'rgba(122, 122, 122, 0.1)',
-                borderWidth: 3,
+                borderWidth: 2,
                 fill: true,
                 tension: 0.4,
-                pointRadius: 5,
+                pointRadius: 4,
                 pointBackgroundColor: '#7a7a7a',
                 pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                pointHoverRadius: 7
+                pointBorderWidth: 2
             }]
         },
         options: {
@@ -207,14 +225,7 @@ function updateChart(dates, rates) {
             maintainAspectRatio: true,
             plugins: {
                 legend: {
-                    display: true,
-                    labels: {
-                        color: '#333',
-                        font: {
-                            size: 12,
-                            weight: '600'
-                        }
-                    }
+                    display: false
                 }
             },
             scales: {
@@ -226,18 +237,18 @@ function updateChart(dates, rates) {
                     ticks: {
                         color: '#666',
                         font: {
-                            size: 11
+                            size: 10
                         }
                     }
                 },
                 x: {
                     grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
+                        display: false
                     },
                     ticks: {
                         color: '#666',
                         font: {
-                            size: 11
+                            size: 10
                         }
                     }
                 }
@@ -254,21 +265,18 @@ async function loadYearlyReport() {
         const rates = [];
         const allRates = [];
         
-        // Генерируем данные для 12 месяцев
         for (let month = 0; month < 12; month++) {
             const date = new Date(year, month, 15);
             const monthName = date.toLocaleDateString('ru-RU', { month: 'short' });
             months.push(monthName);
             
             try {
-                // Используем публичный API для текущих курсов
                 const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${fromCurrency.value}`);
                 
                 if (response.ok) {
                     const data = await response.json();
                     const rate = data.rates[toCurrency.value];
                     if (rate) {
-                        // Добавляем небольшую вариацию для демонстрации колебаний курса
                         const variance = (Math.random() - 0.5) * 0.05 * rate;
                         const variedRate = rate + variance;
                         rates.push(parseFloat(variedRate.toFixed(6)));
@@ -280,24 +288,22 @@ async function loadYearlyReport() {
                     rates.push(null);
                 }
             } catch (error) {
-                console.error('Ошибка загрузки данных:', error);
+                console.error('Ошибка:', error);
                 rates.push(null);
             }
             
-            // Небольшая задержка между запросами
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise(resolve => setTimeout(resolve, 100));
         }
         
         updateYearlyChart(months, rates);
         calculateYearlyStats(allRates);
         
     } catch (error) {
-        console.error('Ошибка загрузки годового отчёта:', error);
-        showError('Ошибка при загрузке годовых данных');
+        console.error('Ошибка годового отчёта:', error);
     }
 }
 
-// Обновление графика за год
+// График за год
 function updateYearlyChart(months, rates) {
     const ctx = document.getElementById('yearlyChart');
     
@@ -310,18 +316,17 @@ function updateYearlyChart(months, rates) {
         data: {
             labels: months,
             datasets: [{
-                label: `${fromCurrency.value} → ${toCurrency.value} (${reportYear.value})`,
+                label: `${fromCurrency.value} → ${toCurrency.value}`,
                 data: rates,
                 borderColor: '#7a7a7a',
                 backgroundColor: 'rgba(122, 122, 122, 0.15)',
-                borderWidth: 3,
+                borderWidth: 2,
                 fill: true,
                 tension: 0.4,
-                pointRadius: 6,
+                pointRadius: 4,
                 pointBackgroundColor: '#7a7a7a',
                 pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                pointHoverRadius: 8
+                pointBorderWidth: 2
             }]
         },
         options: {
@@ -329,14 +334,7 @@ function updateYearlyChart(months, rates) {
             maintainAspectRatio: true,
             plugins: {
                 legend: {
-                    display: true,
-                    labels: {
-                        color: '#333',
-                        font: {
-                            size: 13,
-                            weight: '600'
-                        }
-                    }
+                    display: false
                 }
             },
             scales: {
@@ -348,18 +346,18 @@ function updateYearlyChart(months, rates) {
                     ticks: {
                         color: '#666',
                         font: {
-                            size: 11
+                            size: 10
                         }
                     }
                 },
                 x: {
                     grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
+                        display: false
                     },
                     ticks: {
                         color: '#666',
                         font: {
-                            size: 11
+                            size: 10
                         }
                     }
                 }
@@ -368,44 +366,32 @@ function updateYearlyChart(months, rates) {
     });
 }
 
-// Расчёт статистики за год
+// Статистика за год
 function calculateYearlyStats(allRates) {
-    if (allRates.length === 0) {
-        return;
-    }
+    if (allRates.length === 0) return;
     
     const validRates = allRates.filter(r => r !== null && r !== undefined);
+    if (validRates.length === 0) return;
     
-    if (validRates.length === 0) {
-        return;
-    }
-    
-    // Максимум и минимум
     const maxVal = Math.max(...validRates);
     const minVal = Math.min(...validRates);
-    
-    // Среднее значение
     const avgVal = validRates.reduce((a, b) => a + b, 0) / validRates.length;
     
-    // Изменение за год
     const firstRate = validRates[0];
     const lastRate = validRates[validRates.length - 1];
     const changeVal = lastRate - firstRate;
     const changePercent = ((changeVal / firstRate) * 100).toFixed(2);
     
-    // Волатильность (стандартное отклонение)
     const variance = validRates.reduce((sum, rate) => {
         return sum + Math.pow(rate - avgVal, 2);
     }, 0) / validRates.length;
     const stdDev = Math.sqrt(variance);
     const volatilityPercent = ((stdDev / avgVal) * 100).toFixed(2);
     
-    // Тренд
     const startAvg = validRates.slice(0, 3).reduce((a, b) => a + b) / 3;
     const endAvg = validRates.slice(-3).reduce((a, b) => a + b) / 3;
     const trendValue = endAvg > startAvg ? '📈 Рост' : endAvg < startAvg ? '📉 Снижение' : '➡️ Стабильно';
     
-    // Обновляем элементы
     maxRate.textContent = maxVal.toFixed(6);
     minRate.textContent = minVal.toFixed(6);
     avgRate.textContent = avgVal.toFixed(6);
@@ -416,10 +402,13 @@ function calculateYearlyStats(allRates) {
     tradingDays.textContent = validRates.length;
 }
 
-// Обработка ошибок
+// Ошибки
 function showError(message) {
     errorMsg.textContent = message;
     errorMsg.style.display = 'block';
+    setTimeout(() => {
+        clearError();
+    }, 3000);
 }
 
 function clearError() {
