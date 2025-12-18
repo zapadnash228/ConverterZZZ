@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Конвертер валют</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzAiIGZpbGw9IiMyMmM1NWUiLz48dGV4dCB4PSIzMiIgeT0iNDQiIGZvbnQtc2l6ZT0iMzYiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiPiQ8L3RleHQ+PC9zdmc+">
     <link rel="stylesheet" href="style.css">
@@ -12,15 +12,16 @@
     <div class="container">
         <div class="header">
             <h1>💱 Конвертер валют</h1>
-            <p>Проверяйте курсы в реальном времени, просматривайте исторические данные и годовые отчёты.</p>
+            <p>Курсы в реальном времени</p>
         </div>
 
         <div class="content">
             <div id="errorMsg" class="error-msg"></div>
 
-            <div style="position: relative; margin-bottom: 100px;">
+            <!-- Конвертер -->
+            <div class="converter-section">
                 <div class="currency-box">
-                    <div class="currency-label">Сумма</div>
+                    <div class="currency-label">Из</div>
                     <div class="currency-input-wrapper">
                         <div class="flag-icon" id="fromFlag">🇺🇸</div>
                         <select id="fromCurrency" class="currency-select">
@@ -33,14 +34,14 @@
                             <option value="KGS">KGS</option>
                             <option value="SGD">SGD</option>
                         </select>
-                        <input type="number" id="amount" class="amount-input" value="1000.00" step="0.01" min="0">
+                        <input type="number" id="amount" class="amount-input" value="1000" step="0.01" min="0" inputmode="decimal">
                     </div>
                 </div>
 
                 <div class="swap-button" id="swapBtn">⇅</div>
 
                 <div class="currency-box">
-                    <div class="currency-label">Конвертированная сумма</div>
+                    <div class="currency-label">В</div>
                     <div class="currency-input-wrapper">
                         <div class="flag-icon" id="toFlag">🇸🇬</div>
                         <select id="toCurrency" class="currency-select">
@@ -60,71 +61,71 @@
 
             <div class="rate-info">
                 <div class="rate-value" id="rateText">1 USD = 0 SGD</div>
-                <div class="update-time" id="updateTime">Loading...</div>
+                <div class="update-time" id="updateTime">Загрузка...</div>
             </div>
 
             <button class="refresh-button" id="refreshBtn">🔄 Обновить курсы</button>
 
-            <div class="main-layout">
-                <!-- Левая колонка - Курсы -->
-                <div class="left-column">
-                    <div class="chart-container">
-                        <div class="chart-title">Курс за последние 7 дней</div>
-                        <canvas id="rateChart"></canvas>
+            <!-- Табы -->
+            <div class="tabs">
+                <button class="tab-button active" data-tab="week">7 дней</button>
+                <button class="tab-button" data-tab="year">Год</button>
+            </div>
+
+            <!-- График за 7 дней -->
+            <div class="tab-content active" id="weekTab">
+                <div class="chart-container">
+                    <div class="chart-title">Курс за последние 7 дней</div>
+                    <canvas id="rateChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Годовой отчёт -->
+            <div class="tab-content" id="yearTab">
+                <div class="year-selector">
+                    <label>Год:</label>
+                    <select id="reportYear" class="year-select">
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                    </select>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Курс за год</div>
+                    <canvas id="yearlyChart"></canvas>
+                </div>
+
+                <div class="report-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">Максимум</div>
+                        <div class="stat-value" id="maxRate">-</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Минимум</div>
+                        <div class="stat-value" id="minRate">-</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Среднее</div>
+                        <div class="stat-value" id="avgRate">-</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Изменение</div>
+                        <div class="stat-value" id="changeRate">-</div>
                     </div>
                 </div>
 
-                <!-- Правая колонка - Годовой отчёт -->
-                <div class="right-column">
-                    <div class="report-container">
-                        <div class="report-header">
-                            <h2>📊 Годовой отчёт</h2>
-                            <select id="reportYear" class="year-select">
-                                <option value="2024">2024</option>
-                                <option value="2023">2023</option>
-                            </select>
-                        </div>
-                        
-                        <div class="report-content">
-                            <div class="chart-container-report">
-                                <div class="chart-title">Курс за год</div>
-                                <canvas id="yearlyChart"></canvas>
-                            </div>
-
-                            <div class="report-stats">
-                                <div class="stat-item">
-                                    <div class="stat-label">Максимум</div>
-                                    <div class="stat-value" id="maxRate">-</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-label">Минимум</div>
-                                    <div class="stat-value" id="minRate">-</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-label">Среднее</div>
-                                    <div class="stat-value" id="avgRate">-</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-label">Изменение</div>
-                                    <div class="stat-value" id="changeRate">-</div>
-                                </div>
-                            </div>
-
-                            <div class="report-details">
-                                <div class="details-item">
-                                    <span class="detail-label">📈 Тренд:</span>
-                                    <span class="detail-value" id="trend">Анализируется...</span>
-                                </div>
-                                <div class="details-item">
-                                    <span class="detail-label">📍 Волатильность:</span>
-                                    <span class="detail-value" id="volatility">Анализируется...</span>
-                                </div>
-                                <div class="details-item">
-                                    <span class="detail-label">🔄 Всего торговых дней:</span>
-                                    <span class="detail-value" id="tradingDays">-</span>
-                                </div>
-                            </div>
-                        </div>
+                <div class="report-details">
+                    <div class="details-item">
+                        <span class="detail-label">📈 Тренд</span>
+                        <span class="detail-value" id="trend">-</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="detail-label">📍 Волатильность</span>
+                        <span class="detail-value" id="volatility">-</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="detail-label">🔄 Торговых дней</span>
+                        <span class="detail-value" id="tradingDays">-</span>
                     </div>
                 </div>
             </div>
@@ -133,5 +134,4 @@
 
     <script src="script.js"></script>
 </body>
-
 </html>
